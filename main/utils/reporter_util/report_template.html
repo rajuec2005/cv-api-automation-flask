@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Results</title>
+
+      <style>
+          .bold {
+  font-weight: bold;
+}
+.header{
+  background-color: #CAF0F8;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: bold;
+}
+.childheader{
+  background-color: #fff2df;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: bold;
+}
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-weight: normal;
+}
+
+.btn-success
+{
+  background-color: #00B4D8 !important;
+  border-color: #00B4D8 !important;
+}
+.btn-success:hover {
+      background-color:#00B4D8 !important;
+      border-color:#00B4D8 !important;
+  }
+.btn-success:focus {
+  background-color:#00B4D8 !important;
+}
+      </style>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  </head>
+  <body>
+
+    <h1 style="text-align: center;font-weight: bold">Test Report</h1>
+
+    <div style="margin-left: 25px">
+        <h3 class="bold">Test Summary</h3>
+      <table class="table table-condensed">
+          <tr class="header">
+              <th>Execution ID</th>
+              <th colspan="3">{{results.uuid}}</th>
+          </tr>
+          <tr class="header">
+              <th>Groups</th>
+              <th colspan="3"> {% if results.testExecutionInput[0].groups|length == 0 %}
+               NA
+              {% else %}
+                {% for groupName in results.testExecutionInput[0].groups %}
+                 {{groupName}}
+                {% endfor %}
+              {% endif %}
+              </th>
+          </tr>
+          <tr class="header">
+              <th>Environment</th>
+              <th colspan="3">{{results.testExecutionInput[0].testEnv}}</th>
+          </tr>
+           <tr class="header">
+              <th>Tester's Email </th>
+              <th colspan="3">{{results.testExecutionInput[0].testerEmailId}}</th>
+          </tr>
+          </table>
+
+        <table class="table table-condensed">
+          <thead>
+          <tr>
+              <th class="header">Service Name</th>
+              <th class="header">Total Testscenario</th>
+              <th class="header">Total Passed</th>
+              <th class="header">Total Failed</th>
+         </tr>
+          </thead>
+        <tbody>
+          {% for service_stats in report_stats %}
+          <tr>
+              <th>{{service_stats.service_name}}</th>
+              <th>{{service_stats.total_scenarios}}</th>
+              <th>{{service_stats.total_scenarios_passed}}</th>
+              <th>{{service_stats.total_scenarios_failed}}</th>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="results" style="margin-left: 25px">
+        <h3 class="bold">Test Execution Details</h3>
+          <table class="table table-condensed">
+            <thead>
+               <tr>
+                   <th class="header">Action</th>
+                   <th class="header">Service Name</th>
+                   <th class="header">Test Scenario Name</th>
+                   <th class="header">Status</th>
+               </tr>
+            </thead>
+              <tbody>
+               {% set count = [] %}
+              {% for testscenario in results.testExecutionDetails[0].testScenarios %}
+                    <tr class="sub-container">
+                      <td><button type="button" class="btn btn-success exploder">
+                          <span class="glyphicon glyphicon-search"></span>
+                       </button></td>
+                      <td>{{testscenario.serviceName}}</td>
+                      <td>{{testscenario.tsName}}</td>
+                        {% if testscenario.tsStatus.casefold()=="PASSED".casefold() %}
+                            <td><span class="badge badge-success" style="background-color: green">Passed</span></td>
+                        {% else %}
+                            <td><span class="badge badge-danger" style="background-color: red">Failed</span></td>
+                        {% endif %}
+
+                    </tr>
+                    <tr class="explode hide">
+                      <td colspan="4" style="background: #CCC; display: none;">
+                      <table class="table table-condensed">
+                        <thead>
+                           <tr>
+                           <th class="childheader">Action</th>
+                           <th class="childheader">Test Case</th>
+                           <th class="childheader">Status</th>
+                           </tr>
+                        </thead>
+                          <tbody>
+                          {% for testcase in testscenario.testCases %}
+                              <tr class="sub-container">
+                              <td><button type="button" class="btn btn-success exploder">
+                              <span class="glyphicon glyphicon-search"></span>
+                              </button></td>
+                              <td>{{testcase.tcName}}</td>
+                                  {% if testcase["status"].casefold()=="PASSED".casefold() %}
+                                    <td><span class="badge badge-success" style="background-color: green">Passed</span></td>
+                                  {% elif testcase["status"].casefold()=="FAILED".casefold() %}
+                                    <td><span class="badge badge-danger" style="background-color: red">Failed</span></td>
+                                  {% elif testcase["status"].casefold()=="SKIPPED".casefold() %}
+                                    <td><span class="badge badge-danger" style="background-color: #feb236">Skipped</span></td>
+                                  {% endif %}
+                              </tr>
+                                 <tr class="explode hide">
+                                 <td colspan="4" style="background: #b9936c; display: none;">
+                                 <table class="table table-condensed">
+                                     <tr>
+                                     <td class="bold">URL</td>
+                                     <td>{{testcase.URL}}</td>
+                                     </tr>
+                                     <tr>
+                                     <td class="bold">HTTP Method</td>
+                                     <td>{{testcase.httpMethod}}</td>
+                                     </tr>
+                                      <tr>
+                                     <td class="bold">Status Code</td>
+                                     <td>{{testcase.httpStatusCode}}</td>
+                                     </tr>
+                                      <tr>
+                                     <td class="bold">Response Message</td>
+                                     <td>{{testcase.httpResponseMessage}}</td>
+                                     </tr>
+                                      <tr>
+                                        <td class="bold">Headers</td>
+                                          {% if testcase.headers|length > 0 %}
+                                          <td>
+                                               <pre id={{count|length}}></pre>
+                                              <script>
+                                                      var data = {{testcase.headers}};
+                                                      document.getElementById({{count|length}}).innerHTML=JSON.stringify(data, undefined, 2);
+
+                                              </script>
+                                              {% set var = count.append(1) %}
+                                          </td>
+                                          {% else %}
+                                          <td>NA</td>
+                                          {% endif %}
+                                     </tr>
+                                     <tr>
+                                   <td class="bold">Request Payload</td>
+                                    {% if testcase.requestPayload|length > 0 %}
+                                         <td>
+                                              <pre id={{count|length}}></pre>
+                                             <script>
+
+                                                      var data = {{testcase.requestPayload}};
+                                                      document.getElementById({{count|length}}).innerHTML=JSON.stringify(data, undefined, 2);
+
+                                              </script>
+                                             {% set var = count.append(1) %}
+                                             </td>
+                                    {% else %}
+                                         <td>NA</td>
+                                    {% endif %}
+                                     </tr>
+                                     <tr>
+                                        <td class="bold">Validation</td>
+                                         {% if testcase.validation|length > 0 %}
+                                        <td>
+                                             <pre id={{count|length}}></pre>
+                                            <script>
+
+                                                      var data = {{testcase.validation}};
+                                                      document.getElementById({{count|length}}).innerHTML=JSON.stringify(data, undefined, 2);
+                                            </script>
+                                            {% set var = count.append(1) %}
+                                          {% else %}
+                                         <td>NA</td>
+                                          {% endif %}
+                                     </tr>
+                                     <tr>
+
+                                        <td class="bold">Response Payload</td>
+                                          {% if testcase.jsonResponse|length > 0 %}
+                                        <td>
+                                             <pre id={{count|length}}></pre>
+                                           <script>
+                                                      var data = {{testcase.jsonResponse}};
+                                                      document.getElementById({{count|length}}).innerHTML = JSON.stringify(data, undefined, 2);
+
+                                           </script>
+                                            {%set var = count.append(1) %}
+                                        </td>
+                                          {% else %}
+                                         <td>NA</td>
+                                          {% endif %}
+                                     </tr>
+                                 </table>
+                                 </td>
+                                 </tr>
+                          {% endfor %}
+                          </tbody>
+                          </table>
+                      </td>
+                      </tr>
+              {%endfor%}
+              </tbody>
+          </table>
+    </div>
+
+  <script>
+      $(".exploder").click(function(){
+
+          console.log("Inside function");
+
+  $(this).toggleClass("btn-success btn-danger");
+
+  $(this).children("span").toggleClass("glyphicon-search glyphicon-zoom-out");
+
+  $(this).closest("tr").next("tr").toggleClass("hide");
+
+  if($(this).closest("tr").next("tr").hasClass("hide")){
+    $(this).closest("tr").next("tr").children("td").slideUp();
+  }
+  else{
+    $(this).closest("tr").next("tr").children("td").slideDown(350);
+  }
+});
+
+  </script>
+
+  </body>
+</html>
